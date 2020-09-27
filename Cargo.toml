@@ -1,0 +1,8 @@
+[package]
+name = "gmi2html"
+version = "0.1.0"
+authors = ["Smitty <smitop2@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+gemtext = "0.2.0"
