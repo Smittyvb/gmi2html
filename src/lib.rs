@@ -24,16 +24,35 @@ pub fn gmi2html(gemtext: &str) -> String {
 
 /// Converts the Gemtext nodes into HTML.
 pub fn nodes2html(nodes: Vec<Node>) -> String {
+    #[derive(Debug, Copy, Clone, Eq, PartialEq)]
+    enum MultilineState {
+        List,
+        Quote,
+        None,
+    }
     let mut html = String::new();
-    let mut in_list = false;
+    let mut multiline_state = MultilineState::None;
     for node in nodes {
-        let cur_in_list = matches!(node, Node::ListItem(_));
-        if !in_list && cur_in_list {
-            html.push_str("<ul>");
-        } else if in_list && !cur_in_list {
-            html.push_str("</ul>");
-        }
-        in_list = cur_in_list;
+        let next_multiline_state = match node {
+            Node::ListItem(_) => MultilineState::List,
+            Node::Quote(_) => MultilineState::Quote,
+            _ => MultilineState::None,
+        };
+        if next_multiline_state != multiline_state {
+            // add closing tag
+            html.push_str(match multiline_state {
+                MultilineState::List => "</ul>",
+                MultilineState::Quote => "</blockquote>",
+                MultilineState::None => "",
+            });
+            // add opening tag
+            html.push_str(match next_multiline_state {
+                MultilineState::List => "<ul>",
+                MultilineState::Quote => "<blockquote>",
+                MultilineState::None => "",
+            });
+        };
+        multiline_state = next_multiline_state;
         html.push_str(&match node {
             Node::ListItem(text) => format!("<li>{}</li>", html_escape(&text)),
             Node::Text(text) => format!("<p>{}</p>", html_escape(&text)),
