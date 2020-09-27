@@ -1,6 +1,6 @@
 use gemtext::Node;
 
-pub fn entity_escape_char(khar: &char) -> String {
+fn entity_escape_char(khar: &char) -> String {
     format!("&#x{:X};", (*khar) as u32)
 }
 
